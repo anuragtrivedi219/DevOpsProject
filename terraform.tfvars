@@ -1,0 +1,13 @@
+location         = "East US"
+resource_group   = "Anurag-RG"
+vnet_name        = "vnet01"
+address_space    = ["10.0.0.0/16"]
+subnet1_name     = "subnet1"
+subnet2_name     = "subnet2"
+subnet1_prefix   = "10.0.1.0/24"
+subnet2_prefix   = "10.0.2.0/24"
+admin_username   = "azureuser"
+admin_password   = "Azure@12345678"
+rdp_allowed_ip   = "20.204.187.56/32"
+vm01_private_ip  = "10.0.1.4"
+vm02_private_ip  = "10.0.2.4"

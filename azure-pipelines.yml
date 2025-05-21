@@ -1,0 +1,74 @@
+trigger: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  bkstrgrg: 'Anurag-RG'
+  bkstrg: 'anuragterraformremobcknd'
+  bkcontainer: 'terraformremobcknd219-container'
+  bkstrgkey: 'terraform.tfstate'
+
+stages:
+- stage: tfvalidate
+  jobs:
+  - job: validate
+    continueOnError: false
+    steps:
+    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+      displayName: tfinstall
+      inputs:
+        terraformVersion: '1.5.7'
+
+    - task: TerraformTaskV4@4
+      displayName: init
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: 'Anurag-terrafiles'
+        backendServiceArm: 'Anurag-ServiceConnection'
+        backendAzureRmResourceGroupName: '$(bkstrgrg)'
+        backendAzureRmStorageAccountName: '$(bkstrg)'
+        backendAzureRmContainerName: '$(bkcontainer)'
+        backendAzureRmKey: '$(bkstrgkey)'
+
+- stage: tfdeploy
+  condition: succeeded('tfvalidate')
+  dependsOn: tfvalidate
+  jobs:
+  - job: deploy
+    steps:
+    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+      displayName: tfinstall
+      inputs:
+        terraformVersion: '1.5.7'
+
+    - task: TerraformTaskV4@4
+      displayName: init
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: 'Anurag-terrafiles'
+        backendServiceArm: 'Anurag-ServiceConnection'
+        backendAzureRmResourceGroupName: '$(bkstrgrg)'
+        backendAzureRmStorageAccountName: '$(bkstrg)'
+        backendAzureRmContainerName: '$(bkcontainer)'
+        backendAzureRmKey: '$(bkstrgkey)'
+
+    - task: TerraformTaskV4@4
+      displayName: plan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: 'Anurag-terrafiles'
+        environmentServiceNameAzureRM: 'Anurag-ServiceConnection'
+        commandOptions: '-out=tfplan'
+
+    - task: TerraformTaskV4@4
+      displayName: apply
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: 'Anurag-terrafiles'
+        environmentServiceNameAzureRM: 'Anurag-ServiceConnection'
+        commandOptions: 'tfplan'
